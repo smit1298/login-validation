@@ -26,7 +26,8 @@ const Login = ({ disableButton }) => {
   const [emailError, setEmailError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Memoize regular expressions
+  const localStorageRex = JSON.parse(localStorage.getItem("requirements"));
+
   const digitEx = useMemo(() => /\d/, []);
   const lowerCaseEx = useMemo(() => /[a-z]/, []);
   const upperCaseEx = useMemo(() => /[A-Z]/, []);
@@ -50,37 +51,60 @@ const Login = ({ disableButton }) => {
   };
 
   useEffect(() => {
-    const hasMatchingDigits = password.match(digitEx);
-    const hasMatchingLowerCase = password.match(lowerCaseEx);
-    const hasMatchingUpperCase = password.match(upperCaseEx);
-    const hasMatchingSpecialCharacter = password.match(spCharacEx);
+    if (localStorageRex) {
+      const { upperCaseValue, lowerCaseValue, figure, specialCharacter } =
+        localStorageRex;
 
-    // Password strength check
-    if (
-      password.length >= 8 &&
-      hasMatchingLowerCase &&
-      hasMatchingUpperCase &&
-      hasMatchingDigits &&
-      hasMatchingSpecialCharacter
-    ) {
-      setLevel("Hard");
-      setPercentage(100);
-    } else if (
-      password.length >= 6 &&
-      hasMatchingLowerCase &&
-      hasMatchingUpperCase &&
-      hasMatchingSpecialCharacter
-    ) {
-      setLevel("Medium");
-      setPercentage(50);
-    } else if (password.length > 0) {
-      setLevel("Easy");
-      setPercentage(30);
-    } else {
-      setLevel("");
-      setPercentage(0);
+      const hasMatchingDigits = password.match(digitEx);
+      const hasMatchingLowerCase = password.match(lowerCaseEx);
+      const hasMatchingUpperCase = password.match(upperCaseEx);
+      const hasMatchingSpecialCharacter = password.match(spCharacEx);
+
+      if (
+        password.length >= 10 &&
+        (lowerCaseValue ? hasMatchingLowerCase : true) &&
+        (upperCaseValue ? hasMatchingUpperCase : true) &&
+        (figure ? hasMatchingDigits : true) &&
+        (specialCharacter ? hasMatchingSpecialCharacter : true)
+      ) {
+        setLevel("Hard");
+        setPercentage(100);
+      } else if (
+        (lowerCaseValue ? hasMatchingLowerCase : true) &&
+        (upperCaseValue ? hasMatchingUpperCase : true) &&
+        (specialCharacter ? hasMatchingSpecialCharacter : true)
+      ) {
+        setLevel("Medium");
+        setPercentage(50);
+      } else if (
+        !(
+          (lowerCaseValue ? hasMatchingLowerCase : true) &&
+          (upperCaseValue ? hasMatchingUpperCase : true) &&
+          (specialCharacter ? hasMatchingSpecialCharacter : true)
+        ) ||
+        !(
+          password.length >= 10 &&
+          (lowerCaseValue ? hasMatchingLowerCase : true) &&
+          (upperCaseValue ? hasMatchingUpperCase : true) &&
+          (figure ? hasMatchingDigits : true) &&
+          (specialCharacter ? hasMatchingSpecialCharacter : true)
+        )
+      ) {
+        setLevel("Easy");
+        setPercentage(30);
+      } else {
+        setLevel("");
+        setPercentage(0);
+      }
     }
-  }, [password, digitEx, lowerCaseEx, upperCaseEx, spCharacEx]);
+  }, [
+    password,
+    digitEx,
+    lowerCaseEx,
+    upperCaseEx,
+    spCharacEx,
+    localStorageRex
+  ]);
 
   const handleCloseModal = () => {
     setShowSuccessModal(false);
@@ -158,7 +182,12 @@ const Login = ({ disableButton }) => {
                 className={`${
                   disableButton ||
                   !validateEmail(email) ||
-                  !(level === "Easy" || level === "Medium" || level === "Hard")
+                  !(
+                    level === "Easy" ||
+                    level === "Medium" ||
+                    level === "Hard"
+                  ) ||
+                  password.length === 0
                     ? "bg-[#f1f1f1]"
                     : "bg-[#f4c257]"
                 } text-xl font-semibold text-white cursor-pointer rounded-md py-3 w-full`}
@@ -166,7 +195,12 @@ const Login = ({ disableButton }) => {
                 disabled={
                   disableButton ||
                   !validateEmail(email) ||
-                  !(level === "Easy" || level === "Medium" || level === "Hard")
+                  !(
+                    level === "Easy" ||
+                    level === "Medium" ||
+                    level === "Hard"
+                  ) ||
+                  password.length === 0
                 }
               >
                 Register
