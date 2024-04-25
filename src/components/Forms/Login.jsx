@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   AccountCircle,
   Password,
@@ -13,40 +13,93 @@ import {
   InputLabel,
   TextField
 } from "@mui/material";
-import AlertComponent from "../../components/Alert";
 import logo from "../../assets/images/foodcourt.png";
-import { grey } from "@mui/material/colors";
+import ProgressBar from "../Infographics/ProgressBar";
 
 const Login = ({ disableButton }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [level, setLevel] = useState("");
+  const [percentage, setPercentage] = useState(0);
+  const [emailError, setEmailError] = useState("");
+
+  // Memoize regular expressions
+  const digitEx = useMemo(() => /\d/, []);
+  const lowerCaseEx = useMemo(() => /[a-z]/, []);
+  const upperCaseEx = useMemo(() => /[A-Z]/, []);
+  const spCharacEx = useMemo(() => /[^a-zA-Z0-9]/, []);
+
+  useEffect(() => {
+    const hasMatchingDigits = password.match(digitEx);
+    const hasMatchingLowerCase = password.match(lowerCaseEx);
+    const hasMatchingUpperCase = password.match(upperCaseEx);
+    const hasMatchingSpecialCharacter = password.match(spCharacEx);
+
+    // Password strength check
+    if (
+      password.length >= 8 &&
+      hasMatchingLowerCase &&
+      hasMatchingUpperCase &&
+      hasMatchingDigits &&
+      hasMatchingSpecialCharacter
+    ) {
+      setLevel("hard");
+      setPercentage(100);
+    } else if (
+      password.length >= 6 &&
+      hasMatchingLowerCase &&
+      hasMatchingUpperCase &&
+      hasMatchingSpecialCharacter
+    ) {
+      setLevel("medium");
+      setPercentage(50);
+    } else if (password.length > 0) {
+      setLevel("easy");
+      setPercentage(30);
+    } else {
+      setLevel("");
+      setPercentage(0);
+    }
+  }, [password, digitEx, lowerCaseEx, upperCaseEx, spCharacEx]);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  console.log(disableButton);
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleLogin = (e) => {
     e.preventDefault();
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address.");
+    } else {
+      setEmailError("");
+    }
   };
 
   return (
-    <div className="flex bg-red-200 min-h-screen flex-col">
-      <div className="mx-auto my-[10%] flex flex-col rounded-md bg-white p-2 md:w-3/4 lg:w-[45%]">
-        <div className="flex ">
-          <img src={logo} width={180} height={37} alt="" priority />
+    <div className="flex bg-red-200 min-h-screen flex-col items-center justify-center">
+      <div className="flex flex-col rounded-md bg-white p-2 md:w-3/4 lg:w-[45%]">
+        <div className="flex justify-center">
+          <img src={logo} width={180} height={37} alt="FoodCourt Logo" />
         </div>
         <div className="mx-auto flex flex-col justify-center">
           <h3 className="text-3xl font-bold capitalize">
             <span className="text-[#cc4645]">Food</span>
-            <span className="text-[#f4c257]">Court</span> Login Validation
+            <span className="text-[#f4c257]">Court</span> Sign UP
           </h3>
           <form className="space-y-3 pb-20 pt-3" onSubmit={handleLogin}>
             <div className="">
               <div className="flex justify-center items-center">
                 <AccountCircle sx={{ color: "#cc4645", mr: 1, my: 0.5 }} />
                 <TextField
+                  error={!!emailError}
+                  helperText={emailError}
                   disabled={disableButton}
                   id="input-with-sx"
-                  label="Username"
+                  label="Email"
                   variant="standard"
                   sx={{ m: 1, width: "28ch" }}
                   color="warning"
@@ -54,7 +107,6 @@ const Login = ({ disableButton }) => {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
               <div className="flex justify-center items-center">
                 <Password sx={{ color: "#cc4645", mr: 1, my: 0.5 }} />
                 <FormControl sx={{ m: 1, width: "28ch" }} variant="standard">
@@ -87,16 +139,25 @@ const Login = ({ disableButton }) => {
                   />
                 </FormControl>
               </div>
-
-              {/* <AlertComponent message={"Error"} /> */}
+              {password.length > 0 && (
+                <ProgressBar percentage={percentage} difficulty={level} />
+              )}
             </div>
             <div>
               <button
                 className={`${
-                  disableButton ? "bg-[#f1f1f1]" : "bg-[#f4c257]"
+                  disableButton ||
+                  !validateEmail(email) ||
+                  !(level === "easy" || level === "medium" || level === "hard")
+                    ? "bg-[#f1f1f1]"
+                    : "bg-[#f4c257]"
                 } text-xl font-semibold text-white cursor-pointer rounded-md py-3 w-full`}
                 type="submit"
-                disabled={disableButton}
+                disabled={
+                  disableButton ||
+                  !validateEmail(email) ||
+                  !(level === "easy" || level === "medium" || level === "hard")
+                }
               >
                 Register
               </button>
