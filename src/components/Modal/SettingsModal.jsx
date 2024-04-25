@@ -63,6 +63,7 @@ const SettingsModal = ({ isOpen, closeModal }) => {
             </div>
             {Object.entries(requirements).map(([key, value]) => (
               <FormControlLabel
+                className="text-red-900 text-[1px] md:text-2xl"
                 key={key}
                 control={
                   <Checkbox
@@ -97,6 +98,6 @@ const labelMap = {
   upperCaseValue: "At least 1 uppercase",
   lowerCaseValue: "At least 1 lowercase",
   figure: "At least 1 figure",
-  specialCharacter: "At least 1 special character - !@#$%^&*()",
+  specialCharacter: "At least 1 special character",
   minLength: "At least 8 characters long"
 };

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Login from "../Forms/Login";
 import SettingsModal from "../Modal/SettingsModal";
 
+
 const Registration = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [disableButton, setDisableButton] = useState(true);
