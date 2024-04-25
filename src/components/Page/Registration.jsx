@@ -17,13 +17,15 @@ const Registration = () => {
   };
 
   useEffect(() => {
-  if (
-    !localStorageData ||
-    Object.values(localStorageData).every((value) => !value)
-  ) {
-    setDisableButton(true);
-    openModal();
-  }
+    if (
+      !localStorageData ||
+      Object.values(localStorageData).every((value) => !value)
+    ) {
+      setTimeout(() => {
+        setDisableButton(true);
+        openModal();
+      }, 1600);
+    }
   }, [localStorageData]);
 
   useEffect(() => {
