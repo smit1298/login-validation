@@ -8,23 +8,35 @@ const Registration = () => {
   const [disableButton, setDisableButton] = useState(true);
   const localStorageData = JSON.parse(localStorage.getItem("requirements"));
 
-  const openModal = () => setIsOpen(true);
-  const closeModal = () => setIsOpen(false);
+  const openModal = () => {
+    setIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+  if (
+    !localStorageData ||
+    Object.values(localStorageData).every((value) => !value)
+  ) {
+    setDisableButton(true);
+    openModal();
+  }
+  }, [localStorageData]);
 
   useEffect(() => {
     if (localStorageData) {
       setDisableButton(false);
-    } else {
-      setDisableButton(true);
-      openModal();
-    }
+    } else setDisableButton(true);
   }, [localStorageData]);
 
   return (
     <div className="relative">
       {!isOpen && (
-        <>
-          <div className="absolute cursor-pointer w-fit top-1 right-2 md:hidden">
+        <div>
+          <div className="absolute cursor-pointer flex md:hidden w-fit top-1 right-2">
             <Settings
               onClick={openModal}
               sx={{
@@ -48,10 +60,12 @@ const Registration = () => {
               }}
             />
           </div>
-        </>
+        </div>
       )}
 
-      <Login disableButton={disableButton} />
+      <div>
+        <Login disableButton={disableButton} />
+      </div>
 
       {isOpen && <SettingsModal isOpen={isOpen} closeModal={closeModal} />}
     </div>
