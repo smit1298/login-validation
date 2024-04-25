@@ -47,9 +47,7 @@ const Login = ({ disableButton }) => {
       setEmailError("Please enter a valid email address.");
     } else {
       setEmailError("");
-      setFormSubmitted(true); // Set form submission status
-      // Additional logic can be added here for actual form submission
-      setShowSuccessModal(true); // Show success modal
+      setShowSuccessModal(true);
     }
   };
 
@@ -88,7 +86,6 @@ const Login = ({ disableButton }) => {
 
   const handleCloseModal = () => {
     setShowSuccessModal(false);
-    setFormSubmitted(false); // Reset form submission status
     setEmail("");
     setPassword("");
     setShowPassword(false);
