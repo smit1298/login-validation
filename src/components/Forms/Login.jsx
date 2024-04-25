@@ -12,7 +12,6 @@ import {
   InputAdornment,
   InputLabel,
   TextField,
-  Modal,
   Fade
 } from "@mui/material";
 import logo from "../../assets/images/foodcourt.png";
@@ -26,7 +25,6 @@ const Login = ({ disableButton }) => {
   const [percentage, setPercentage] = useState(0);
   const [emailError, setEmailError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Memoize regular expressions
   const digitEx = useMemo(() => /\d/, []);
