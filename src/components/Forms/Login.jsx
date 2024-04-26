@@ -24,14 +24,77 @@ const Login = ({ disableButton }) => {
   const [level, setLevel] = useState("");
   const [percentage, setPercentage] = useState(0);
   const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const localStorageRex = JSON.parse(localStorage.getItem("requirements"));
+  const localStorageRex =
+    JSON.parse(localStorage.getItem("requirements")) || {};
 
+  // Define regex patterns
   const digitEx = useMemo(() => /\d/, []);
   const lowerCaseEx = useMemo(() => /[a-z]/, []);
   const upperCaseEx = useMemo(() => /[A-Z]/, []);
   const spCharacEx = useMemo(() => /[^a-zA-Z0-9]/, []);
+  const minLengthEx = useMemo(() => /^(?=.{8,})/, []); // Ensure minimum length is 8 for example
+
+  // Validate the password based on local storage settings
+  const validatePassword = useMemo(() => {
+    let valid = true;
+    if (localStorageRex.upperCaseValue) {
+      valid = valid && upperCaseEx.test(password);
+    }
+    if (localStorageRex.lowerCaseValue) {
+      valid = valid && lowerCaseEx.test(password);
+    }
+    if (localStorageRex.figure) {
+      valid = valid && digitEx.test(password);
+    }
+    if (localStorageRex.specialCharacter) {
+      valid = valid && spCharacEx.test(password);
+    }
+    if (localStorageRex.minLength) {
+      valid = valid && minLengthEx.test(password);
+    }
+    return valid;
+  }, [password, localStorageRex]);
+
+  useEffect(() => {
+    let newLevel = "";
+    let newPercentage = 0;
+
+    if (
+      upperCaseEx.test(password) &&
+      lowerCaseEx.test(password) &&
+      digitEx.test(password) &&
+      spCharacEx.test(password) &&
+      password.length > 10
+    ) {
+      newLevel = "Hard";
+      newPercentage = 100;
+    } else if (
+      upperCaseEx.test(password) &&
+      lowerCaseEx.test(password) &&
+      spCharacEx.test(password)
+    ) {
+      newLevel = "Medium";
+      newPercentage = 50;
+    } else {
+      newLevel = "Easy";
+      newPercentage = 30;
+    }
+
+    setLevel(newLevel);
+    setPercentage(newPercentage);
+  }, [password]);
+
+  // Error messaging for password based on validation
+  useEffect(() => {
+    if (!validatePassword) {
+      setPasswordError("Password does not meet the required criteria.");
+    } else {
+      setPasswordError("");
+    }
+  }, [validatePassword, password]);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -44,67 +107,14 @@ const Login = ({ disableButton }) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address.");
+    } else if (!validatePassword) {
+      setPasswordError("Invalid password.");
     } else {
       setEmailError("");
+      setPasswordError("");
       setShowSuccessModal(true);
     }
   };
-
-  useEffect(() => {
-    if (localStorageRex) {
-      const { upperCaseValue, lowerCaseValue, figure, specialCharacter } =
-        localStorageRex;
-
-      const hasMatchingDigits = password.match(digitEx);
-      const hasMatchingLowerCase = password.match(lowerCaseEx);
-      const hasMatchingUpperCase = password.match(upperCaseEx);
-      const hasMatchingSpecialCharacter = password.match(spCharacEx);
-
-      if (
-        password.length >= 10 &&
-        (lowerCaseValue ? hasMatchingLowerCase : true) &&
-        (upperCaseValue ? hasMatchingUpperCase : true) &&
-        (figure ? hasMatchingDigits : true) &&
-        (specialCharacter ? hasMatchingSpecialCharacter : true)
-      ) {
-        setLevel("Hard");
-        setPercentage(100);
-      } else if (
-        (lowerCaseValue ? hasMatchingLowerCase : true) &&
-        (upperCaseValue ? hasMatchingUpperCase : true) &&
-        (specialCharacter ? hasMatchingSpecialCharacter : true)
-      ) {
-        setLevel("Medium");
-        setPercentage(50);
-      } else if (
-        !(
-          (lowerCaseValue ? hasMatchingLowerCase : true) &&
-          (upperCaseValue ? hasMatchingUpperCase : true) &&
-          (specialCharacter ? hasMatchingSpecialCharacter : true)
-        ) ||
-        !(
-          password.length >= 10 &&
-          (lowerCaseValue ? hasMatchingLowerCase : true) &&
-          (upperCaseValue ? hasMatchingUpperCase : true) &&
-          (figure ? hasMatchingDigits : true) &&
-          (specialCharacter ? hasMatchingSpecialCharacter : true)
-        )
-      ) {
-        setLevel("Easy");
-        setPercentage(30);
-      } else {
-        setLevel("");
-        setPercentage(0);
-      }
-    }
-  }, [
-    password,
-    digitEx,
-    lowerCaseEx,
-    upperCaseEx,
-    spCharacEx,
-    localStorageRex
-  ]);
 
   const handleCloseModal = () => {
     setShowSuccessModal(false);
@@ -151,6 +161,8 @@ const Login = ({ disableButton }) => {
                     Password
                   </InputLabel>
                   <Input
+                    error={!!passwordError}
+                    helperText={passwordError}
                     id="standard-adornment-password"
                     type={showPassword ? "text" : "password"}
                     color="warning"
@@ -182,11 +194,7 @@ const Login = ({ disableButton }) => {
                 className={`${
                   disableButton ||
                   !validateEmail(email) ||
-                  !(
-                    level === "Easy" ||
-                    level === "Medium" ||
-                    level === "Hard"
-                  ) ||
+                  !validatePassword ||
                   password.length === 0
                     ? "bg-[#f1f1f1]"
                     : "bg-[#f4c257]"
@@ -195,11 +203,7 @@ const Login = ({ disableButton }) => {
                 disabled={
                   disableButton ||
                   !validateEmail(email) ||
-                  !(
-                    level === "Easy" ||
-                    level === "Medium" ||
-                    level === "Hard"
-                  ) ||
+                  !validatePassword ||
                   password.length === 0
                 }
               >
