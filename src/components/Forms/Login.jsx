@@ -191,20 +191,14 @@ const Login = ({ disableButton }) => {
             </div>
             <div>
               <button
-                className={`${
-                  disableButton ||
-                  !validateEmail(email) ||
-                  !validatePassword ||
-                  password.length === 0
+                className={` ${
+                  !validateEmail(email) || !validatePassword || disableButton
                     ? "bg-[#f1f1f1]"
                     : "bg-[#f4c257]"
                 } text-xl font-semibold text-white cursor-pointer rounded-md py-3 w-full`}
                 type="submit"
                 disabled={
-                  disableButton ||
-                  !validateEmail(email) ||
-                  !validatePassword ||
-                  password.length === 0
+                  !validateEmail(email) || !validatePassword || disableButton
                 }
               >
                 Register
