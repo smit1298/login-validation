@@ -35,7 +35,7 @@ const Login = ({ disableButton }) => {
   const lowerCaseEx = useMemo(() => /[a-z]/, []);
   const upperCaseEx = useMemo(() => /[A-Z]/, []);
   const spCharacEx = useMemo(() => /[^a-zA-Z0-9]/, []);
-  const minLengthEx = useMemo(() => /^(?=.{8,})/, []); // Ensure minimum length is 8 for example
+  const minLengthEx = useMemo(() => /^(?=.{8,})/, []); 
 
   // Validate the password based on local storage settings
   const validatePassword = useMemo(() => {
@@ -56,7 +56,15 @@ const Login = ({ disableButton }) => {
       valid = valid && minLengthEx.test(password);
     }
     return valid;
-  }, [password, localStorageRex]);
+  }, [
+    password,
+    localStorageRex,
+    minLengthEx,
+    lowerCaseEx,
+    upperCaseEx,
+    spCharacEx,
+    digitEx
+  ]);
 
   useEffect(() => {
     let newLevel = "";
@@ -85,7 +93,7 @@ const Login = ({ disableButton }) => {
 
     setLevel(newLevel);
     setPercentage(newPercentage);
-  }, [password]);
+  }, [password, digitEx, spCharacEx, upperCaseEx, lowerCaseEx]);
 
   // Error messaging for password based on validation
   useEffect(() => {
